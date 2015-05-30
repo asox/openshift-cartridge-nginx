@@ -1,0 +1,165 @@
+#!/bin/bash
+set -e
+
+source ${OPENSHIFT_CARTRIDGE_SDK_BASH}
+
+export STOPTIMEOUT=20
+export STARTTIMEOUT=20
+
+NGINX_EXEC=${OPENSHIFT_NGINX_VERSION_DIR}/sbin/nginx
+NGINX_CONFIG_FILE=${OPENSHIFT_NGINX_DIR}/conf/nginx.conf
+NGINX_HTTP_CONFIG_FILE=${OPENSHIFT_NGINX_DIR}/conf/nginx_http.conf
+
+function isrunning() {
+    if [ -f "${OPENSHIFT_NGINX_PID}" ]; then
+        local pid=`cat ${OPENSHIFT_NGINX_PID} 2> /dev/null`
+        [ -z "${pid}" ]  &&  return 1
+
+        local current_user=`id -u`
+        if `ps --pid ${pid} > /dev/null 2>&1` || \
+           `pgrep -x nginx -u ${current_user} > /dev/null 2>&1`; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
+function hasconfig() {
+    if [ ! -f "${NGINX_CONFIG_FILE}" ]; then
+        echo "Missing conf/nginx.conf in cartridge."
+        return 1
+    fi
+    if [ ! -f "${NGINX_HTTP_CONFIG_FILE}" ]; then
+        echo "Missing .openshift/nginx.conf.erb in repo."
+        return 1
+    fi
+
+    return 0
+}
+
+function _nginx_start() {
+    if hasconfig; then
+        ${NGINX_EXEC} -c ${NGINX_CONFIG_FILE} -p ${OPENSHIFT_NGINX_DIR} 2>&1
+
+        if [ $? -ne 0 ]; then
+            echo "Error starting nginx"
+        elif ! isrunning; then
+            local TIMEOUT="${STARTTIMEOUT}"
+            while [ ${TIMEOUT} -gt 0 ] && [ ! -f "${OPENSHIFT_NGINX_PID}" ]; do
+                sleep .5
+                let TIMEOUT=${TIMEOUT}-1
+            done
+        fi
+    fi
+}
+
+function _nginx_stop() {
+    [ -f "${OPENSHIFT_NGINX_PID}" ] && pid=$( /bin/cat "${OPENSHIFT_NGINX_PID}" )
+
+    # Check pid file
+    if `ps -p ${pid} > /dev/null 2>&1`; then
+        if hasconfig; then
+            ${NGINX_EXEC} -c ${NGINX_CONFIG_FILE} -p ${OPENSHIFT_NGINX_DIR} -s stop  2>&1
+        else
+            /bin/kill -9 ${pid}
+        fi
+
+        local ret=$?
+        if [ ${ret} -eq 0 ]; then
+            local TIMEOUT="${STOPTIMEOUT}"
+            while [ ${TIMEOUT} -gt 0 ] && [ -f "${OPENSHIFT_NGINX_PID}" ]; do
+                /bin/kill -0 "${pid}" >/dev/null 2>&1 || break
+                sleep .5
+                let TIMEOUT=${TIMEOUT}-1
+            done
+        fi
+    else
+        local current_user=`id -u`
+        if `pgrep -x nginx -u ${current_user} > /dev/null 2>&1`
+        then
+            echo "Warning: Nginx process exists without a pid file. Use force-stop to kill."
+        else
+            echo "Nginx already stopped"
+        fi
+    fi
+}
+
+function _nginx_update_conf() {
+    CONF_FILE=${OPENSHIFT_REPO_DIR}/.openshift/nginx.conf.erb
+    if [ -f "${CONF_FILE}" ]; then
+        oo-erb ${CONF_FILE} > ${NGINX_HTTP_CONFIG_FILE}
+    else
+        echo "Failed updating .openshift/nginx.conf.erb, file not found"
+    fi
+}
+
+function start() {
+    if isrunning; then
+        _nginx_stop
+    fi
+
+    _nginx_update_conf
+    _nginx_start
+    isrunning && echo "Nginx instance is started"
+}
+
+
+function stop() {
+    _nginx_stop
+    isrunning  ||  echo "Nginx instance is stopped"
+}
+
+
+function restart() {
+    _nginx_stop || pkill nginx || :
+    _nginx_start
+
+    isrunning  &&  echo "Restarted Nginx instance"
+}
+
+
+function status() {
+    if isrunning; then
+        client_result "Nginx is running"
+    else
+        client_result "Nginx is stopped"
+    fi
+}
+
+
+function reload() {
+    if ! isrunning; then
+       _nginx_start
+    elif hasconfig; then
+       echo "`date`: Reloading Nginx " 1>&2
+        ${NGINX_EXEC} -c ${NGINX_CONFIG_FILE} -s reload 2>&1
+    fi
+
+    isrunning  &&  echo "Reloaded Nginx instance"
+}
+
+function tidy() {
+    client_message "Emptying log dir: ${OPENSHIFT_NGINX_DIR}/logs"
+    shopt -s dotglob
+    rm -rf logs/*
+}
+
+function update() {
+    _nginx_update_conf
+}
+
+function build() {
+    _nginx_update_conf
+}
+
+case "$1" in
+  start)     start ;;
+  stop)      stop ;;
+  restart)   restart ;;
+  status)    status ;;
+  reload)    reload ;;
+  tidy)      tidy ;;
+  update)    update ;;
+  build)     build ;;
+  *)         exit 0
+esac

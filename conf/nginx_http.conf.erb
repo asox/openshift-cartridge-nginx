@@ -1,0 +1,71 @@
+# Use the "index" directive one time in your http { } block and it will be inherited below.
+index index.php index.htm index.html;
+
+# Drop requests for unknown hosts
+#
+# If no default server is defined, nginx will use the first found server.
+# To prevent host header attacks, or other potential problems when an unknown
+# servername is used in a request, it's recommended to drop the request
+# returning 444 "no response".
+
+server {
+  listen <%= ENV['OPENSHIFT_NGINX_PORT'] %> default_server;
+  return 444;
+}
+
+# www to non-www redirect -- duplicate content is BAD:
+# https://github.com/h5bp/html5-boilerplate/blob/5370479476dceae7cc3ea105946536d6bc0ee468/.htaccess#L362
+# Choose between www and non-www, listen on the *wrong* one and redirect to
+# the right one -- http://wiki.nginx.org/Pitfalls#Server_Name
+
+# server {
+#   # don't forget to tell on which port this server listens
+#   listen  <%= ENV['OPENSHIFT_NGINX_IP'] %>:<%= ENV['OPENSHIFT_NGINX_PORT'] %> deferred;
+#
+#   # listen on the non-www host
+#   server_name example.com;
+#
+#   # and redirect to the www host (declared below)
+#   return 301 $scheme://www.example.com$request_uri;
+# }
+
+server {
+  # listen [::]:80 accept_filter=httpready; # for FreeBSD
+  # listen 80 accept_filter=httpready; # for FreeBSD
+  # listen [::]:80 deferred; # for Linux
+  # listen 80 deferred; # for Linux
+  listen  <%= ENV['OPENSHIFT_NGINX_IP'] %>:<%= ENV['OPENSHIFT_NGINX_PORT'] %> deferred;
+
+  # The host name to respond to
+  # server_name www.example.com;
+
+  # Path for static files
+  root    <%= ENV['OPENSHIFT_REPO_DIR'] %>/public;
+
+  #Specify a charset
+  charset utf-8;
+
+  # Custom 404 page
+  #error_page 404 /404.html;
+
+  # Include the basic h5bp config set
+  include <%= ENV['OPENSHIFT_NGINX_DIR'] %>/usr/nginx-<%= ENV['OPENSHIFT_NGINX_VERSION'] %>/conf/h5bp/basic.conf;
+
+  location / {
+    try_files $uri $uri/ /index.php?$query_string;
+  }
+
+  # pass the PHP scripts to PHP-FPM
+  location ~ \.php$ {
+    # Prevent Zero-day exploit
+    try_files $uri =404;
+    #Use a nested location to filter out the problem condition
+    location ~ \..*/.*\.php$ {return 404;}
+
+    include <%= ENV['OPENSHIFT_NGINX_DIR'] %>/usr/nginx-<%= ENV['OPENSHIFT_NGINX_VERSION'] %>/conf/fastcgi_params;
+    fastcgi_index  index.php;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_split_path_info ^(.+\.php)(/.+)$;
+    fastcgi_pass unix:<%= ENV['OPENSHIFT_PHP_SOCKET'] %>;
+  }
+}

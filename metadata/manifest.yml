@@ -1,0 +1,54 @@
+Name: nginx
+Cartridge-Short-Name: NGINX
+Display-Name: Nginx
+Version: "1.8.0"
+Versions: ["1.8.0"]
+Website: https://github.com/asox/openshift-cartridge-nginx
+Cartridge-Version: 0.0.1
+Cartridge-Vendor: asox
+Categories:
+  - web_framework
+  - service
+  - nginx
+Provides:
+  - nginx-1.8
+  - nginx
+Scaling:
+  Min: 1
+  Max: -1
+Cart-Data:
+  - Key: OPENSHIFT_NGINX_PORT
+    Type: environment
+    Description: "Internal port to which the web-framework binds to."
+  - Key: OPENSHIFT_NGINX_IP
+    Type: environment
+    Description: "Internal IP to which the web-framework binds to."
+Publishes:
+  get-doc-root:
+    Type: "FILESYSTEM:doc-root"
+  publish-http-url:
+    Type: "NET_TCP:httpd-proxy-info"
+  publish-gear-endpoint:
+    Type: "NET_TCP:gear-endpoint-info"
+Subscribes:
+  set-env:
+    Type: ENV:*
+    Required: false
+  set-doc-url:
+    Type: STRING:urlpath
+    Required: false
+Group-Overrides:
+  - components:
+    - web_proxy
+Endpoints:
+  - Private-IP-Name:   IP
+    Private-Port-Name: PORT
+    Private-Port:      8080
+    Public-Port-Name:  PROXY_PORT
+    Mappings:
+      - Frontend:      ""
+        Backend:       ""
+        Options:       { websocket: true }
+      - Frontend:      "/health"
+        Backend:       ""
+        Options:       { health: true }
