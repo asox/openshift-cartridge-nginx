@@ -49,7 +49,10 @@ server {
   #error_page 404 /404.html;
 
   # Include the basic h5bp config set
-  include <%= ENV['OPENSHIFT_NGINX_DIR'] %>/usr/nginx-<%= ENV['OPENSHIFT_NGINX_VERSION'] %>/conf/h5bp/basic.conf;
+  include <%= ENV['OPENSHIFT_NGINX_DIR'] %>usr/nginx-<%= ENV['OPENSHIFT_NGINX_VERSION'] %>/conf/h5bp/directive-only/x-ua-compatible.conf;
+  include <%= ENV['OPENSHIFT_NGINX_DIR'] %>usr/nginx-<%= ENV['OPENSHIFT_NGINX_VERSION'] %>/conf/h5bp/location/expires.conf;
+  include <%= ENV['OPENSHIFT_NGINX_DIR'] %>usr/nginx-<%= ENV['OPENSHIFT_NGINX_VERSION'] %>/conf/h5bp/location/cross-domain-fonts.conf;
+  include <%= ENV['OPENSHIFT_NGINX_DIR'] %>usr/nginx-<%= ENV['OPENSHIFT_NGINX_VERSION'] %>/conf/h5bp/location/protect-system-files.conf;
 
   location / {
     try_files $uri $uri/ /index.php?$query_string;
@@ -62,7 +65,7 @@ server {
     #Use a nested location to filter out the problem condition
     location ~ \..*/.*\.php$ {return 404;}
 
-    include <%= ENV['OPENSHIFT_NGINX_DIR'] %>/usr/nginx-<%= ENV['OPENSHIFT_NGINX_VERSION'] %>/conf/fastcgi_params;
+    include <%= ENV['OPENSHIFT_NGINX_DIR'] %>usr/nginx-<%= ENV['OPENSHIFT_NGINX_VERSION'] %>/conf/fastcgi_params;
     fastcgi_index  index.php;
     fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
     fastcgi_split_path_info ^(.+\.php)(/.+)$;
