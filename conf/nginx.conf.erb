@@ -39,6 +39,8 @@ http {
   default_type application/octet-stream;
   # Update charset_types due to updated mime.types
   charset_types text/xml text/plain text/vnd.wap.wml application/x-javascript application/rss+xml text/css application/javascript application/json;
+  #Specify a charset
+  charset utf-8;
 
   # Openshift temp file locations
   client_body_temp_path  <%= ENV['OPENSHIFT_TMP_DIR'] %>/client_temp;
@@ -75,7 +77,7 @@ http {
   #   information on existence of directories;
   #   file lookup errors, such as “file not found”, “no read permission”, and so on.
   # Caching of errors should be enabled separately by the open_file_cache_errors directive.
-  open_file_cache           max=4000 inactive=20s;
+  open_file_cache           max=2000 inactive=20s;
   open_file_cache_valid     30s;
   open_file_cache_min_uses  2;
   open_file_cache_errors    on;
