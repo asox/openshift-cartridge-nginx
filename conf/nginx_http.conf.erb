@@ -1,5 +1,5 @@
 # Use the "index" directive one time in your http { } block and it will be inherited below.
-index index.php index.htm index.html;
+index index.htm index.html index.php;
 
 # Drop requests for unknown hosts
 #
@@ -34,7 +34,7 @@ server {
   # listen 80 accept_filter=httpready; # for FreeBSD
   # listen [::]:80 deferred; # for Linux
   # listen 80 deferred; # for Linux
-  listen  <%= ENV['OPENSHIFT_NGINX_IP'] %>:<%= ENV['OPENSHIFT_NGINX_PORT'] %> deferred;
+  listen  <%= ENV['OPENSHIFT_NGINX_PORT'] %> deferred;
 
   # The host name to respond to
   # server_name www.example.com;
