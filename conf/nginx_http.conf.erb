@@ -18,15 +18,11 @@ index index.html index.htm index.php;
 # }
 
 server {
-  # listen [::]:80 accept_filter=httpready; # for FreeBSD
-  # listen 80 accept_filter=httpready; # for FreeBSD
-  # listen [::]:80 deferred; # for Linux
-  # listen 80 deferred; # for Linux
-  listen  <%= ENV['OPENSHIFT_NGINX_PORT'] %> default_server deferred;
-
   # The host name to respond to
-  server_name localhost;
+  # server_name localhost;
 
+  # don't forget to tell on which port this server listens
+  listen  <%= ENV['OPENSHIFT_NGINX_IP'] %>:<%= ENV['OPENSHIFT_NGINX_PORT'] %> deferred;
   # Path for static files
   root    <%= ENV['OPENSHIFT_REPO_DIR'] %>/public;
 
