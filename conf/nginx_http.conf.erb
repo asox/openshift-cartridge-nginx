@@ -1,17 +1,5 @@
 # Use the "index" directive one time in your http { } block and it will be inherited below.
-index index.htm index.html index.php;
-
-# Drop requests for unknown hosts
-#
-# If no default server is defined, nginx will use the first found server.
-# To prevent host header attacks, or other potential problems when an unknown
-# servername is used in a request, it's recommended to drop the request
-# returning 444 "no response".
-
-server {
-  listen <%= ENV['OPENSHIFT_NGINX_PORT'] %> default_server;
-  return 444;
-}
+index index.html index.htm index.php;
 
 # www to non-www redirect -- duplicate content is BAD:
 # https://github.com/h5bp/html5-boilerplate/blob/5370479476dceae7cc3ea105946536d6bc0ee468/.htaccess#L362
@@ -34,10 +22,10 @@ server {
   # listen 80 accept_filter=httpready; # for FreeBSD
   # listen [::]:80 deferred; # for Linux
   # listen 80 deferred; # for Linux
-  listen  <%= ENV['OPENSHIFT_NGINX_PORT'] %> deferred;
+  listen  <%= ENV['OPENSHIFT_NGINX_PORT'] %> default_server deferred;
 
   # The host name to respond to
-  # server_name www.example.com;
+  server_name localhost;
 
   # Path for static files
   root    <%= ENV['OPENSHIFT_REPO_DIR'] %>/public;
