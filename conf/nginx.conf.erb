@@ -8,13 +8,9 @@
 #
 # The maximum number of connections for Nginx is calculated by:
 # max_clients = worker_processes * worker_connections
-worker_processes 2;
+worker_processes 1;
 
-# Maximum file descriptors that can be opened per process
-# This should be > worker_connections
-worker_rlimit_nofile 8192;
-
-error_log  <%= ENV['OPENSHIFT_LOG_DIR'] %>/nginx_error.log;
+error_log  <%= ENV['OPENSHIFT_LOG_DIR'] %>nginx_error.log;
 pid        <%= ENV['OPENSHIFT_NGINX_PID'] %>;
 
 events {
@@ -43,11 +39,11 @@ http {
   charset utf-8;
 
   # Openshift temp file locations
-  client_body_temp_path  <%= ENV['OPENSHIFT_TMP_DIR'] %>/client_temp;
-  proxy_temp_path        <%= ENV['OPENSHIFT_TMP_DIR'] %>/proxy_temp;
-  fastcgi_temp_path      <%= ENV['OPENSHIFT_TMP_DIR'] %>/fastcgi_temp;
-  uwsgi_temp_path        <%= ENV['OPENSHIFT_TMP_DIR'] %>/uwsgi_temp;
-  scgi_temp_path         <%= ENV['OPENSHIFT_TMP_DIR'] %>/scgi_temp;
+  client_body_temp_path  <%= ENV['OPENSHIFT_TMP_DIR'] %>client_temp;
+  proxy_temp_path        <%= ENV['OPENSHIFT_TMP_DIR'] %>proxy_temp;
+  fastcgi_temp_path      <%= ENV['OPENSHIFT_TMP_DIR'] %>fastcgi_temp;
+  uwsgi_temp_path        <%= ENV['OPENSHIFT_TMP_DIR'] %>uwsgi_temp;
+  scgi_temp_path         <%= ENV['OPENSHIFT_TMP_DIR'] %>scgi_temp;
 
   # Format to use in log files
   log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
@@ -57,7 +53,7 @@ http {
   # Default log file
   # Buffer log writes to speed up IO
   # (this is only used when you don't override access_log on a server{} level)
-  access_log  <%= ENV['OPENSHIFT_LOG_DIR'] %>/nginx_access.log  main buffer=16k;
+  access_log  <%= ENV['OPENSHIFT_LOG_DIR'] %>nginx_access.log  main buffer=16k;
 
   # How long to allow each connection to stay idle; longer values are better
   # for each individual client, particularly for SSL, but means that worker
@@ -77,7 +73,7 @@ http {
   #   information on existence of directories;
   #   file lookup errors, such as “file not found”, “no read permission”, and so on.
   # Caching of errors should be enabled separately by the open_file_cache_errors directive.
-  open_file_cache           max=2000 inactive=20s;
+  open_file_cache           max=1000 inactive=20s;
   open_file_cache_valid     30s;
   open_file_cache_min_uses  2;
   open_file_cache_errors    on;

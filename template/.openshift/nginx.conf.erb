@@ -1,5 +1,5 @@
 # Use the "index" directive one time in your http { } block and it will be inherited below.
-index index.html index.htm index.php;
+index index.php index.html index.htm;
 
 # www to non-www redirect -- duplicate content is BAD:
 # https://github.com/h5bp/html5-boilerplate/blob/5370479476dceae7cc3ea105946536d6bc0ee468/.htaccess#L362
@@ -24,7 +24,7 @@ server {
   # don't forget to tell on which port this server listens
   listen  <%= ENV['OPENSHIFT_NGINX_IP'] %>:<%= ENV['OPENSHIFT_NGINX_PORT'] %> deferred;
   # Path for static files
-  root    <%= ENV['OPENSHIFT_REPO_DIR'] %>/public;
+  root    <%= ENV['OPENSHIFT_REPO_DIR'] %>public;
 
   location / {
     try_files $uri $uri/ /index.php?$query_string;
@@ -40,10 +40,10 @@ server {
     location ~ \..*/.*\.php$ {return 404;}
 
     # Pass PHP scripts to PHP-FPM
-    # include <%= ENV['OPENSHIFT_NGINX_DIR'] %>usr/nginx-<%= ENV['OPENSHIFT_NGINX_VERSION'] %>/conf/fastcgi_params;
-    # fastcgi_index  index.php;
-    # fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-    # fastcgi_split_path_info ^(.+\.php)(/.+)$;
-    # fastcgi_pass unix:<%= ENV['OPENSHIFT_PHP_SOCKET'] %>;
+    include <%= ENV['OPENSHIFT_NGINX_VERSION_DIR'] %>/conf/fastcgi_params;
+    fastcgi_index  index.php;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_split_path_info ^(.+\.php)(/.+)$;
+    fastcgi_pass unix:<%= ENV['OPENSHIFT_PHP_SOCKET'] %>;
   }
 }
