@@ -49,17 +49,17 @@ server {
   # Include the basic h5bp config set
   include  <%= ENV['OPENSHIFT_NGINX_DIR'] %>conf/nginx_static.conf;
 
-  # pass the PHP scripts to PHP-FPM
   location ~ \.php$ {
     # Prevent Zero-day exploit
     try_files $uri =404;
-    #Use a nested location to filter out the problem condition
+    # Use a nested location filter
     location ~ \..*/.*\.php$ {return 404;}
 
-    include <%= ENV['OPENSHIFT_NGINX_DIR'] %>usr/nginx-<%= ENV['OPENSHIFT_NGINX_VERSION'] %>/conf/fastcgi_params;
-    fastcgi_index  index.php;
-    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-    fastcgi_split_path_info ^(.+\.php)(/.+)$;
-    fastcgi_pass unix:<%= ENV['OPENSHIFT_PHP_SOCKET'] %>;
+    # Pass PHP scripts to PHP-FPM
+    # include <%= ENV['OPENSHIFT_NGINX_DIR'] %>usr/nginx-<%= ENV['OPENSHIFT_NGINX_VERSION'] %>/conf/fastcgi_params;
+    # fastcgi_index  index.php;
+    # fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    # fastcgi_split_path_info ^(.+\.php)(/.+)$;
+    # fastcgi_pass unix:<%= ENV['OPENSHIFT_PHP_SOCKET'] %>;
   }
 }
