@@ -8,20 +8,20 @@ esac
 
 # Resolve version
 NGINX_VERSION=1.8.0
-if [ ! -z "${OPENSHIFT_NGINX_VERSION}" ] && [ -d "${OPENSHIFT_NGINX_DIR}/usr/nginx-${OPENSHIFT_NGINX_VERSION}/" ]; then
+if [ ! -z "${OPENSHIFT_NGINX_VERSION}" ] && [ -d "${OPENSHIFT_NGINX_DIR}usr/nginx-${OPENSHIFT_NGINX_VERSION}" ]; then
     NGINX_VERSION="${OPENSHIFT_NGINX_VERSION}"
-elif [ -d "${OPENSHIFT_NGINX_DIR}/usr/nginx-${version}/" ]; then
+elif [ -d "${OPENSHIFT_NGINX_DIR}usr/nginx-${version}" ]; then
     NGINX_VERSION="${version}"
 fi
 
 # Create dirs
 dirs=( "logs" "run" )
 for dir in ${dirs[@]}; do
-    mkdir -p "${OPENSHIFT_NGINX_DIR}/${dir}"
+    mkdir -p "${OPENSHIFT_NGINX_DIR}${dir}"
 done
 
 # Set version env variable
 export OPENSHIFT_NGINX_VERSION=${NGINX_VERSION}
 
-echo "${NGINX_VERSION}" > ${OPENSHIFT_NGINX_DIR}/env/OPENSHIFT_NGINX_VERSION
-echo "${OPENSHIFT_NGINX_DIR}/usr/nginx-${OPENSHIFT_NGINX_VERSION}" > ${OPENSHIFT_NGINX_DIR}/env/OPENSHIFT_NGINX_VERSION_DIR
+echo "${NGINX_VERSION}" > ${OPENSHIFT_NGINX_DIR}env/OPENSHIFT_NGINX_VERSION
+echo "${OPENSHIFT_NGINX_DIR}usr/nginx-${OPENSHIFT_NGINX_VERSION}" > ${OPENSHIFT_NGINX_DIR}env/OPENSHIFT_NGINX_VERSION_DIR
